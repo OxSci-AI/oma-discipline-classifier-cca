@@ -30,6 +30,9 @@ WORKDIR /app
 # Copy project metadata for version extraction
 COPY pyproject.toml ./
 
+# Copy orchestrator configuration
+COPY orchestrator.json ./
+
 # Copy virtualenv with dependencies
 COPY --from=dependencies /app/.venv /app/.venv
 
