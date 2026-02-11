@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "mcp-article-processing": {
+      "service_name": "mcp-article-processing-prod",
+      "enabled": true
+    },
+    "mcp-article-analysis": {
+      "service_name": "mcp-article-analysis-prod",
+      "enabled": true
+    }
+  }
+}

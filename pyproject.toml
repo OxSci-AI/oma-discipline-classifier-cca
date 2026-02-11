@@ -1,0 +1,102 @@
+[project]
+name = "oma-discipline-classifier-cca"
+version = "0.1.0"
+description = "OMA Discipline Classifier Cca Service"
+authors = [{ name = "Your Name", email = "your.email@example.com" }]
+readme = "README.md"
+requires-python = ">=3.11,<3.14.0"
+
+[tool.poetry]
+packages = [{ include = "app" }]
+
+# Dependencies must be defined using tool.poetry.dependencies
+# oxsci-shared-core and oxsci-oma-core must use source = "oxsci-ca" to specify the repository
+[tool.poetry.dependencies]
+fastapi = ">=0.104.0"
+uvicorn = ">=0.24.0"
+pydantic = ">=2.4.2"
+httpx = ">=0.25.1"
+oxsci-shared-core = { version = ">=0.5.0", source = "oxsci-ca" }
+oxsci-oma-core = { extras = [
+    "claude"
+], version = ">=0.5.0", source = "oxsci-ca" }
+pyyaml = "^6.0.3"
+markdown = "^3.7"
+
+
+[[tool.poetry.source]]
+name = "oxsci-ca"
+url = "https://oxsci-domain-000373574646.d.codeartifact.ap-southeast-1.amazonaws.com/pypi/oxsci-pypi/simple/"
+priority = "explicit"
+
+
+[tool.poetry.group.dev]
+optional = true
+[tool.poetry.group.dev.dependencies]
+black = ">=23.10.1"
+isort = ">=5.12.0"
+flake8 = ">=6.1.0"
+mypy = ">=1.6.1"
+
+[tool.poetry.group.test]
+optional = true
+[tool.poetry.group.test.dependencies]
+email-validator = ">=2.2.0,<3.0.0"
+pytest = ">=7.4.3"
+pytest-cov = ">=4.1.0"
+pytest-asyncio = ">=0.21.1"
+fakeredis = "^2.28.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.pytest.ini_options]
+# Test directory
+testpaths = ["tests"]
+
+# Minimum version requirement
+minversion = "6.0"
+
+# Test file discovery pattern
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Additional options
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+    "--cov=.",
+    "--cov-report=term-missing",
+]
+
+# Test markers definition
+markers = [
+    "unit: Unit tests - tests without external service dependencies",
+    "integration: Integration tests - tests requiring external services",
+    "e2e: End-to-end tests - complete user flow tests",
+    "slow: Slower running tests",
+]
+
+# Async test support
+asyncio_mode = "auto"
+
+# Filter warnings
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning",
+]

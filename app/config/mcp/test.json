@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "mcp-article-processing": {
+      "enabled": true
+    },
+    "mcp-article-analysis": {
+      "enabled": true
+    }
+  }
+}

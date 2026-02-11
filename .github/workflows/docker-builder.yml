@@ -1,0 +1,72 @@
+name: Build & Deploy Agent
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      auto_version:
+        description: "Auto version the package (only if not a tag push)"
+        required: true
+        default: true
+        type: boolean
+      pump_version:
+        description: "Version bump (only if auto_version is true and not a tag push)"
+        required: true
+        default: "patch"
+        type: choice
+        options: [patch, minor, major]
+      deploy_to_test:
+        description: "Deploy to test environment after build"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  read-service-name:
+    name: Read service_name from pyproject.toml
+    runs-on: ubuntu-latest
+    outputs:
+      service_name: ${{ steps.read.outputs.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Read name from pyproject.toml
+        id: read
+        run: |
+          if [[ -f pyproject.toml ]]; then
+            NAME=$(awk '/^\[project\]/{f=1} f&&/^name\s*=/{print $0; exit}' pyproject.toml | sed 's/^name\s*=\s*"\(.*\)"/\1/')
+            if [[ -z "$NAME" ]]; then
+              NAME=$(basename "$GITHUB_REPOSITORY")
+            fi
+          else
+            NAME=$(basename "$GITHUB_REPOSITORY")
+          fi
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+
+  build-and-push:
+    name: Build & Push Agent
+    needs: read-service-name
+    uses: OxSci-AI/oxsci-deploy/.github/workflows/reusable-agent-docker-build.yml@main
+    with:
+      agent_name: ${{ needs.read-service-name.outputs.service_name }}
+      enable_codeartifact: true
+      auto_version: ${{ inputs.auto_version || false }}
+      pump_version: ${{ inputs.pump_version || 'patch' }}
+
+  deploy-to-test:
+    name: Deploy Agent to Test
+    needs: [read-service-name, build-and-push]
+    if: ${{ (inputs.deploy_to_test == true || inputs.deploy_to_test == null) && !startsWith(github.ref, 'refs/tags/') }}
+    uses: OxSci-AI/oxsci-deploy/.github/workflows/reusable-agent-deploy.yml@main
+    with:
+      agent_name: ${{ needs.read-service-name.outputs.service_name }}
+      image_tag: ${{ github.sha }}
+      image_version: ${{ needs.build-and-push.outputs.version }}
+      environment: test
+      cpu: 1024
+      memory: 2048

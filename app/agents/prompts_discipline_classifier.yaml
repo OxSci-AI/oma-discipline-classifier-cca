@@ -1,0 +1,150 @@
+# Agent Prompts Configuration for Discipline Classification
+# Academic Paper Discipline Classifier v1.0
+#
+# This file contains prompt templates for the discipline classification pipeline:
+# - Phase 1: Paper Content Extraction
+# - Phase 2: Discipline Classification
+
+# =============================================================================
+# PHASE 1: PAPER CONTENT EXTRACTION
+# =============================================================================
+paper_content_extraction:
+  description: "Extract key content from academic paper for review preparation"
+  temperature: 0.1
+  model: "sonnet"
+  template: |
+    You are an expert at analyzing academic papers and extracting key information
+    for peer review purposes.
+
+    # WORKFLOW
+
+    1. Read the paper content from provided sections
+    2. Extract and structure the following information:
+       - Title and Abstract
+       - Keywords (explicit and implicit)
+       - Research Questions/Hypotheses
+       - Methodology Overview
+       - Key Findings
+       - Limitations (if mentioned)
+
+    # EXTRACTION FOCUS
+
+    - **Methodology terms**: "we propose", "our approach", "method", "algorithm"
+    - **Domain-specific terminology**: Technical vocabulary indicating the field
+    - **Claims and assertions**: Statements that can be evaluated
+    - **Data descriptions**: Sample size, data sources, time periods
+
+    # MULTI-DISCIPLINE DETECTION
+
+    - Note any terms that could indicate MULTIPLE disciplines
+    - List all potential discipline indicators
+    - Flag cross-disciplinary combinations
+
+    # PAPER CONTENT
+
+    {paper_sections}
+
+    # OUTPUT FORMAT
+
+    Save your analysis as JSON to: {output_file}
+
+    ```json
+    {{
+        "title": "...",
+        "abstract": "...",
+        "keywords": ["...", "..."],
+        "research_questions": ["...", "..."],
+        "methodology_summary": "...",
+        "key_findings": ["...", "..."],
+        "methodology_terms": ["...", "..."],
+        "domain_terms": ["...", "..."],
+        "potential_disciplines": ["...", "..."]
+    }}
+    ```
+
+    After saving, return a brief summary (1-2 sentences) of the paper.
+
+# =============================================================================
+# PHASE 2: DISCIPLINE CLASSIFICATION
+# =============================================================================
+discipline_classifier:
+  description: "Identify discipline IDs (1-23) based on paper's CORE research content"
+  temperature: 0.1
+  model: "sonnet"
+  template: |
+    You classify academic papers into disciplines by analyzing their CORE content.
+
+    # DISCIPLINE LIST (Select by ID)
+
+    {discipline_list}
+
+    # KEYWORD -> ID MAPPING
+
+    {keyword_section}
+
+    # STRICT CLASSIFICATION RULES
+
+    **FUNDAMENTAL PRINCIPLE**: A discipline should be assigned ONLY if the paper
+    makes a DIRECT, SUBSTANTIAL contribution to that field.
+
+    ## WHAT COUNTS AS VALID EVIDENCE (Must have at least one):
+    1. **Core Methods**: The paper's PRIMARY methodology belongs to this discipline
+    2. **Core Problem**: The paper solves a CENTRAL problem in this discipline
+    3. **Core Data**: The paper's MAIN dataset is from this discipline's domain
+    4. **Core Contribution**: The paper's MAIN results advance this discipline
+
+    ## WHAT DOES NOT COUNT (Reject these):
+    1. **Incidental Mentions**: Field mentioned as "potential application"
+    2. **Metaphorical Language**: Using field terms as metaphors
+    3. **Generic Tools**: Using general tools popular in a field
+    4. **Future Speculation**: "Could be applied to X"
+    5. **Buzzword Connections**: Mentioning trendy terms without substance
+    6. **Downstream Effects**: "Helps patients" does not equal Medicine
+
+    ## SCORING RULES
+    | Score     | Meaning |
+    |-----------|---------|
+    | 0.8-1.0   | Primary: paper's MAIN contribution is in this field |
+    | 0.6-0.8   | Strong: paper makes SIGNIFICANT contribution |
+    | 0.4-0.6   | Clear: paper has SUBSTANTIAL connection |
+    | < 0.4     | DO NOT include - connection is too weak |
+
+    # PAPER CONTENT
+
+    ## Title
+    {paper_title}
+
+    ## Abstract
+    {paper_abstract}
+
+    ## Keywords
+    {paper_keywords}
+
+    ## Methodology Terms
+    {methodology_terms}
+
+    ## Domain Terms
+    {domain_terms}
+
+    ## Potential Disciplines (from extraction)
+    {potential_disciplines}
+
+    # OUTPUT FORMAT
+
+    Save your classification as JSON to: {output_file}
+
+    ```json
+    {{
+        "disciplines": [
+            {{"id": <1-23>, "name": "<discipline name>", "score": <0.4-1.0>, "evidence": "<specific quote>"}}
+        ],
+        "confidence": <0.0-1.0>,
+        "reasoning": "<why these disciplines and not others>"
+    }}
+    ```
+
+    - Maximum 3 disciplines, minimum 1
+    - Only include disciplines with score >= 0.4 AND concrete evidence
+    - When uncertain, prefer FEWER disciplines
+
+    After saving, return the discipline names and confidence score.
