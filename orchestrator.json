@@ -1,0 +1,38 @@
+{
+  "orchestrators": [
+    {
+      "key": "discipline_classifier",
+      "name": "Discipline Classifier Flow",
+      "execution_mode": "real",
+      "description": "Classify academic papers into 1-23 disciplines (2-phase pipeline: Parse, Classify)",
+      "agents": [
+        {
+          "agent_id": "discipline_classifier",
+          "dependencies": [],
+          "input_mapping": {
+            "file_id": "${input.file_id}",
+            "structured_content_overview_id": "${input.structured_content_overview_id}"
+          }
+        }
+      ]
+    }
+  ],
+  "default_orchestrator": "discipline_classifier",
+  "input_schema": {
+    "file_id": {
+      "type": "string",
+      "description": "PDF file ID",
+      "required": false
+    },
+    "structured_content_overview_id": {
+      "type": "string",
+      "description": "Already parsed content ID",
+      "required": false
+    },
+    "manuscript_id": {
+      "type": "string",
+      "description": "Manuscript ID (alias for file_id)",
+      "required": false
+    }
+  }
+}
