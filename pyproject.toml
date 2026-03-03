@@ -1,8 +1,8 @@
 [project]
 name = "oma-discipline-classifier-cca"
-version = "0.1.0"
-description = "OMA Discipline Classifier Cca Service"
-authors = [{ name = "Your Name", email = "your.email@example.com" }]
+version = "0.1.1"
+description = "OMA Discipline Classifier CCA Agent - Classifies academic papers into 23 disciplines"
+authors = [{ name = "OxSci AI", email = "dev@oxsci.ai" }]
 readme = "README.md"
 requires-python = ">=3.11,<3.14.0"
 

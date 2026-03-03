@@ -11,6 +11,7 @@
           "dependencies": [],
           "input_mapping": {
             "file_id": "${input.file_id}",
+            "manuscript_id": "${input.manuscript_id}",
             "structured_content_overview_id": "${input.structured_content_overview_id}"
           }
         }
@@ -21,17 +22,17 @@
   "input_schema": {
     "file_id": {
       "type": "string",
-      "description": "PDF file ID",
+      "description": "PDF file ID of the research paper",
+      "required": true
+    },
+    "manuscript_id": {
+      "type": "string",
+      "description": "Manuscript ID for tracking context",
       "required": false
     },
     "structured_content_overview_id": {
       "type": "string",
-      "description": "Already parsed content ID",
-      "required": false
-    },
-    "manuscript_id": {
-      "type": "string",
-      "description": "Manuscript ID (alias for file_id)",
+      "description": "Already parsed content ID (optional, skips PDF parsing)",
       "required": false
     }
   }

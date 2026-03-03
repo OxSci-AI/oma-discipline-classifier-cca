@@ -21,17 +21,6 @@
       "proxy": false,
       "proxy_url": "${MCP_PROXY_URL}",
       "api_key": "${PROXY_API_KEY}"
-    },
-    "mcp-journal-insight": {
-      "enabled": false,
-      "service_name": "mcp-journal-insight-prod",
-      "port": 8060,
-      "timeout": 30,
-      "max_startup_wait": 300,
-      "retry_interval": 5,
-      "proxy": false,
-      "proxy_url": "${MCP_PROXY_URL}",
-      "api_key": "${PROXY_API_KEY}"
     }
   }
 }
